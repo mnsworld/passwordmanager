@@ -2,6 +2,7 @@ import json
 import os
 import crypto_core as cc
 
+# crypto and real file bridge
 VAULT_PATH = os.path.join(os.path.expanduser('~'), ".local_passmgr_vault.dat")
 
 # custom exception
@@ -12,6 +13,7 @@ class WrongPasswordError(Exception):
 def vault_exists() -> bool:
     return os.path.exists(VAULT_PATH)
 
+# for every vault create the following
 def create_vault(master_password: str) -> None:
     salt = cc.generate_salt()
     key = cc.derive_key(master_password, salt)
@@ -24,12 +26,13 @@ def _write_vault(salt: bytes, key: bytes, entries: list) -> None:
     nonce, ciphertext = cc.encrypt(key, plaintext)
 
     with open (VAULT_PATH, "wb") as f:
-        f.write(salt)
-        f.write(nonce)
+        # fixed
+        f.write(salt) # 16 bytes
+        f.write(nonce) # 24 bytes
         f.write(ciphertext)
 
     try:
-        os.chmod(VAULT_PATH, 0o600)
+        os.chmod(VAULT_PATH, 0o600) #  0o600 access restriction for this user access ####
     except (NotImplementedError, OSError):
         pass
 
